@@ -89,8 +89,10 @@ print ("%s out of 60 sub-samples tested positive for LMV" % count)
 
 #fuck around space
 import json
-sorted_wells = [[str(i), well_dict[i]] for i in sorted(well_dict.keys())]
+sorted_wells = [['Sub-sample', 'O.D. reading', 'Cut-off']]
+sorted_wells += [[str(i), well_dict[i], cutoff] for i in sorted(well_dict.keys())]
 encoded_wells = json.dumps(sorted_wells)
+print (encoded_wells)
 
 html_container = """
 <!doctype html>
@@ -129,7 +131,7 @@ html_container = """
 	<script></script>
 </body>
 </html>
-""" % encoded_wells
+""" % (encoded_wells)
 
 output_filename = ".".join([source.split(".")[0], "html"])
 
