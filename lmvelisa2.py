@@ -76,6 +76,7 @@ The signal-to-noise ratio is %.2f
 """ % (cutoff, sig_to_noise))
 
 #Determines if a well is negative or positive and prints positive wells with O.D. value
+sample_size = 60
 count = 0
 for item in well_dict:
 	if well_dict[item] >= cutoff:
@@ -84,15 +85,25 @@ for item in well_dict:
 		else:
 			count += 1
 			print ("Well",item,"is POSITIVE with O.D. value of",well_dict[item])
-print ("%s out of 60 sub-samples tested positive for LMV" % count)
+print ("%s out of %s sub-samples tested positive for LMV" % (count, sample_size))
 
+#Builds list with only relevant sample data and mean of the controls
+sample = [['Sub-sample', 'O.D. reading', 'Cut-off']]
+for x in range(sample_size):
+	sample.append([str(x+1), well_dict[x+1], cutoff])
+sample.append(['Agdia control', well_dict[agdia_well], cutoff])
+sample.append(['Negative control', negative_mean, cutoff])
+sample.append(['Positive control', positive_mean, cutoff])
+sample.append(['Buffer control', buffer_mean, cutoff])
+
+print (sample)
 
 #fuck around space
 import json
 sorted_wells = [['Sub-sample', 'O.D. reading', 'Cut-off']]
 sorted_wells += [[str(i), well_dict[i], cutoff] for i in sorted(well_dict.keys())]
 encoded_wells = json.dumps(sorted_wells)
-print (encoded_wells)
+#print (encoded_wells)
 
 html_container = """
 <!doctype html>
@@ -107,8 +118,8 @@ html_container = """
   	
   	function doneDrawingChart() {
   	  var table = new google.visualization.DataTable();
-  	  table.addColumn('string', 'Well');
-  	  table.addColumn('number', 'OD');
+  	  table.addColumn('string', 'Well', 'Cutoff');
+  	  table.addColumn('number', 'OD', 'Cutoff');
 
   	  table.addRows(data);
 
@@ -139,6 +150,6 @@ with open(output_filename, "w") as handle:
 	handle.write(html_container)
 
 import os
-os.system("open %s" % output_filename)
+#os.system("open %s" % output_filename)
 
 
