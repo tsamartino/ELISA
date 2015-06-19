@@ -1,4 +1,5 @@
 import statistics
+import os
 
 source = "0633-1.txt"
 
@@ -92,18 +93,64 @@ sample = [['Sub-sample', 'O.D. reading', 'Cut-off']]
 for x in range(sample_size):
 	sample.append([str(x+1), well_dict[x+1], cutoff])
 sample.append(['Agdia control', well_dict[agdia_well], cutoff])
-sample.append(['Negative control', negative_mean, cutoff])
-sample.append(['Positive control', positive_mean, cutoff])
-sample.append(['Buffer control', buffer_mean, cutoff])
+sample.append(['Negative control mean', negative_mean, cutoff])
+sample.append(['Positive control mean', positive_mean, cutoff])
+sample.append(['Buffer control mean', buffer_mean, cutoff])
 
-print (sample)
+#Generates an html report using Google Visualization Combo Chart (bar for OD values, line for cutoff)
+report = """
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages: ["corechart"]});
+google.setOnLoadCallback(drawVisualization);
+
+function drawVisualization() {
+	// Plate data
+
+	var dataTable = new google.visualization.DataTable();
+	  dataTable.addColumn({ type: 'string', id: 'Sub-sample'})
+	  dataTable.addColumn({ type: 'number', id: 'O.D. reading'})
+	  dataTable.addColumn({ type: 'number', id: 'Cut-off'})
+	  dataTable.addRows(%s)
+
+	var options = {
+	  title : 'ELISA results for plate %s',
+	  vAxis: {title: "O.D. reading"},
+	  hAxis: {title: "Sub-sample"},
+	  seriesType: "bars",
+	  series: {1: {type: "line"}}
+	};
+
+	var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+	chart.draw(dataTable, options);
+}
+    </script>
+  </head>
+  <body>
+    <div id="chart_div" style="width: 900px; height: 500px;"></div>
+  </body>
+</html>
+""" % (sample[1:], plate_name)
+
+output_filename = ".".join([source.split(".")[0], "html"])
+
+with open(output_filename, "w") as handle:
+	handle.write(report)
+
+#os.system("open %s" % output_filename)
+
+
+
+
+
 
 #fuck around space
 import json
 sorted_wells = [['Sub-sample', 'O.D. reading', 'Cut-off']]
 sorted_wells += [[str(i), well_dict[i], cutoff] for i in sorted(well_dict.keys())]
 encoded_wells = json.dumps(sorted_wells)
-#print (encoded_wells)
 
 html_container = """
 <!doctype html>
@@ -142,14 +189,12 @@ html_container = """
 	<script></script>
 </body>
 </html>
-""" % (encoded_wells)
+""" % (sample)
 
-output_filename = ".".join([source.split(".")[0], "html"])
 
-with open(output_filename, "w") as handle:
-	handle.write(html_container)
 
-import os
-#os.system("open %s" % output_filename)
+
+
+
 
 
